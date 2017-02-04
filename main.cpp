@@ -12,6 +12,8 @@
 #include <cmath>
 #include <chrono>
 #include <thread>
+#include "ThreadPool2.hpp"
+#include "TSQ.hpp"
 
 auto imageSize = 600;
 auto maxPixelVal = 256;
@@ -104,7 +106,7 @@ void generateMadlebrot(int beg, int end)
 //Function calculate average
 double computeAverage(std::vector<double> &duration)
 {
-    double mean = 0;
+    double mean = 0.0;
     for (auto i = 0; i < (int)duration.size(); i++)
     {
         mean += duration[i];
@@ -126,28 +128,44 @@ double computeSd(std::vector<double> &duration, double mean)
 
 void generateImage(int numThreads)
 {
-    std::vector<std::thread> threads;
+    ThreadPool2 pool(numThreads);
+    
     for (int i = 0; i < numThreads; i++)
     {
         int beg = (imageSize / numThreads) * i;
         int end = (imageSize / numThreads) * (i+1);
         
-        threads.push_back(std::thread(generateMadlebrot, beg, end));
+        //std::function<void(void)> task = std::bind(generateMadlebrot, beg, end);
         
+        pool.enqueue([=](){generateMadlebrot(beg, end);});
+        
+        //pool.enqueue(task);
     }
-    for (int i = 0; i < (int)threads.size(); i++)
-    {
-        threads[i].join();
-    }
+   
+//    std::vector<std::thread> threads;
+//    for (int i = 0; i < numThreads; i++)
+//    {
+//        int beg = (imageSize / numThreads) * i;
+//        int end = (imageSize / numThreads) * (i+1);
+//        
+//        threads.push_back(std::thread(generateMadlebrot, beg, end));
+//        
+//    }
+//    for (int i = 0; i < (int)threads.size(); i++)
+//    {
+//        threads[i].join();
+//    }
 }
 
 int main()
 {
     color = new Color();
-    int numTests = 5;
+    int numTests = 10;
     std::vector<double> durations;
     
-    int numThreads = 8;
+    int numThreads = 1;
+    
+    //generateImage(numThreads);
     
     //Run tests
     for (int i = 0; i < numTests; i++)
@@ -181,13 +199,5 @@ int main()
         fout << std::endl;
     }
     
-//    for (int i = 0; i < imageContents.size(); i++)
-//    {
-//        fout << imageContents[i] << " ";
-//        if (i % imageSize == 0)
-//        {
-//            fout << std::endl;
-//        }
-//    }
 }
 
