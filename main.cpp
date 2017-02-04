@@ -84,18 +84,29 @@ Color* computeColor(int n, Color* newColor)
 }
 
 //Generate madelbrot without writing to a file
-void generateMadlebrot(int beg)
+void generateMadlebrot(int beg, int end)
 {
-  for (int j = 0; j < imageSize; j++)
-  {
-    double cr = mapToReal(j, imageSize, minReal, maxReal);
+
+  // for (int j = 0; j < imageSize; j++)
+  // {
+    double cr = mapToReal(end, imageSize, minReal, maxReal);
     double ci = mapToImaginary(beg, imageSize, minImag, maxImag);
     int n = findMandelbrot(cr, ci, maxPixelVal);
 
     color = computeColor(n, color);
 
-    imageContents[beg][j] = *color;
-  }
+    imageContents[beg][end] = *color;
+  //row by row
+  // for (int j = 0; j < imageSize; j++)
+  // {
+  //   double cr = mapToReal(j, imageSize, minReal, maxReal);
+  //   double ci = mapToImaginary(beg, imageSize, minImag, maxImag);
+  //   int n = findMandelbrot(cr, ci, maxPixelVal);
+  //
+  //   color = computeColor(n, color);
+  //
+  //   imageContents[beg][j] = *color;
+  // }
 
     //int index = beg;
     // for (int i = beg; i < end; i++)
@@ -112,6 +123,7 @@ void generateMadlebrot(int beg)
     //         //std::cout << " 0 ";
     //     }
     // }
+    //Even chunks
     // for (int i = beg; i < end; i++)
     // {
     //     for (int j = 0; j < imageSize; j++)
@@ -133,20 +145,21 @@ void generateImage(int numThreads)
 {
     ThreadPool2 pool(numThreads);
 
-    for (int i = 0; i < imageSize; i++)
-    {
-      pool.enqueue([=](){generateMadlebrot(i);});
-    }
-
-
+    //Row by row
     // for (int i = 0; i < imageSize; i++)
     // {
-    //   for (int j = 0; j < imageSize; j++)
-    //   {
-    //     pool.enqueue([=](){generateMadlebrot(i, j);});
-    //     //std::cout << "Hello";
-    //   }
+    //   pool.enqueue([=](){generateMadlebrot(i);});
     // }
+
+    //Pixel by pixel
+    for (int i = 0; i < imageSize; i++)
+    {
+      for (int j = 0; j < imageSize; j++)
+      {
+        pool.enqueue([=](){generateMadlebrot(i, j);});
+        //std::cout << "Hello";
+      }
+    }
 
     // for (int i = 0; i < 8; i++)
     // {
