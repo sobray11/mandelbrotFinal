@@ -88,20 +88,20 @@ void generateMadlebrot(int beg, int end)
 {
 
     //int index = beg;
-    // for (int i = beg; i < end; i++)
-    // {
-    //     for (int j = beg; j < end; j++)
-    //     {
-            double cr = mapToReal(end, imageSize, minReal, maxReal);
-            double ci = mapToImaginary(beg, imageSize, minImag, maxImag);
+    for (int i = beg; i < end; i++)
+    {
+        for (int j = 0; j < imageSize; j++)
+        {
+            double cr = mapToReal(j, imageSize, minReal, maxReal);
+            double ci = mapToImaginary(i, imageSize, minImag, maxImag);
             int n = findMandelbrot(cr, ci, maxPixelVal);
 
             color = computeColor(n, color);
 
-            imageContents[beg][end] = *color;
+            imageContents[i][j] = *color;
             //std::cout << " 0 ";
-    //     }
-    // }
+        }
+    }
     // for (int i = beg; i < end; i++)
     // {
     //     for (int j = 0; j < imageSize; j++)
@@ -123,26 +123,26 @@ void generateImage(int numThreads)
 {
     ThreadPool2 pool(numThreads);
 
-    for (int i = 0; i < imageSize; i++)
-    {
-      for (int j = 0; j < imageSize - 2; j++)
-      {
-        pool.enqueue([=](){generateMadlebrot(i, j);});
-        //std::cout << "Hello";
-      }
-    }
-
-    // for (int i = 0; i < numThreads; i++)
+    // for (int i = 0; i < imageSize; i++)
     // {
-    //     int beg = (imageSize / numThreads) * i;
-    //     int end = (imageSize / numThreads) * (i+1);
-    //
-    //     //std::function<void(void)> task = std::bind(generateMadlebrot, beg, end);
-    //
-    //     pool.enqueue([=](){generateMadlebrot(beg, end);});
-    //
-    //     //pool.enqueue(task);
+    //   for (int j = 0; j < imageSize; j++)
+    //   {
+    //     pool.enqueue([=](){generateMadlebrot(i, j);});
+    //     //std::cout << "Hello";
+    //   }
     // }
+
+    for (int i = 0; i < 8; i++)
+    {
+        int beg = (imageSize / 8) * i;
+        int end = (imageSize / 8) * (i+1);
+
+        //std::function<void(void)> task = std::bind(generateMadlebrot, beg, end);
+
+        pool.enqueue([=](){generateMadlebrot(beg, end);});
+
+        //pool.enqueue(task);
+    }
 }
 
    //Function calculate average
@@ -173,7 +173,7 @@ int main()
     int numTests = 5;
     std::vector<double> durations;
 
-    int numThreads = 6;
+    int numThreads = 8;
 
     //generateImage(numThreads);
 
