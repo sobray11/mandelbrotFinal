@@ -86,87 +86,97 @@ Color* computeColor(int n, Color* newColor)
 //Generate madelbrot without writing to a file
 void generateMadlebrot(int beg, int end)
 {
-    
+
     //int index = beg;
-    for (int i = beg; i < end; i++)
-    {
-        for (int j = 0; j < imageSize; j++)
-        {
-            double cr = mapToReal(j, imageSize, minReal, maxReal);
-            double ci = mapToImaginary(i, imageSize, minImag, maxImag);
+    // for (int i = beg; i < end; i++)
+    // {
+    //     for (int j = beg; j < end; j++)
+    //     {
+            double cr = mapToReal(end, imageSize, minReal, maxReal);
+            double ci = mapToImaginary(beg, imageSize, minImag, maxImag);
             int n = findMandelbrot(cr, ci, maxPixelVal);
-            
+
             color = computeColor(n, color);
-            
-            imageContents[i][j] = *color;
-        }
-    }
+
+            imageContents[beg][end] = *color;
+            //std::cout << " 0 ";
+    //     }
+    // }
+    // for (int i = beg; i < end; i++)
+    // {
+    //     for (int j = 0; j < imageSize; j++)
+    //     {
+    //         double cr = mapToReal(j, imageSize, minReal, maxReal);
+    //         double ci = mapToImaginary(i, imageSize, minImag, maxImag);
+    //         int n = findMandelbrot(cr, ci, maxPixelVal);
+    //
+    //         color = computeColor(n, color);
+    //
+    //         imageContents[i][j] = *color;
+    //     }
+    // }
 }
 
-//Function calculate average
-double computeAverage(std::vector<double> &duration)
-{
-    double mean = 0.0;
-    for (auto i = 0; i < (int)duration.size(); i++)
-    {
-        mean += duration[i];
-    }
-    mean = mean / duration.size();
-    return mean;
-}
-//Function to calculate standard deviation
-double computeSd(std::vector<double> &duration, double mean)
-{
-    std::vector<double> differences;
-    double sd = 0.0;
-    for (int i = 0; i < (int)duration.size(); i++)
-    {
-        sd += pow(duration[i] - mean, 2);
-    }
-    return sqrt(sd / duration.size());
-}
+
 
 void generateImage(int numThreads)
 {
     ThreadPool2 pool(numThreads);
-    
-    for (int i = 0; i < numThreads; i++)
+
+    for (int i = 0; i < imageSize; i++)
     {
-        int beg = (imageSize / numThreads) * i;
-        int end = (imageSize / numThreads) * (i+1);
-        
-        //std::function<void(void)> task = std::bind(generateMadlebrot, beg, end);
-        
-        pool.enqueue([=](){generateMadlebrot(beg, end);});
-        
-        //pool.enqueue(task);
+      for (int j = 0; j < imageSize - 2; j++)
+      {
+        pool.enqueue([=](){generateMadlebrot(i, j);});
+        //std::cout << "Hello";
+      }
     }
-   
-//    std::vector<std::thread> threads;
-//    for (int i = 0; i < numThreads; i++)
-//    {
-//        int beg = (imageSize / numThreads) * i;
-//        int end = (imageSize / numThreads) * (i+1);
-//        
-//        threads.push_back(std::thread(generateMadlebrot, beg, end));
-//        
-//    }
-//    for (int i = 0; i < (int)threads.size(); i++)
-//    {
-//        threads[i].join();
-//    }
+
+    // for (int i = 0; i < numThreads; i++)
+    // {
+    //     int beg = (imageSize / numThreads) * i;
+    //     int end = (imageSize / numThreads) * (i+1);
+    //
+    //     //std::function<void(void)> task = std::bind(generateMadlebrot, beg, end);
+    //
+    //     pool.enqueue([=](){generateMadlebrot(beg, end);});
+    //
+    //     //pool.enqueue(task);
+    // }
 }
+
+   //Function calculate average
+    double computeAverage(std::vector<double> &duration)
+    {
+      double mean = 0.0;
+      for (auto i = 0; i < (int)duration.size(); i++)
+      {
+        mean += duration[i];
+      }
+      mean = mean / duration.size();
+      return mean;
+    }
+    //Function to calculate standard deviation
+    double computeSd(std::vector<double> &duration, double mean)
+    {
+      std::vector<double> differences;
+      double sd = 0.0;
+      for (int i = 0; i < (int)duration.size(); i++)
+      {
+        sd += pow(duration[i] - mean, 2);
+      }        return sqrt(sd / duration.size());
+    }
 
 int main()
 {
     color = new Color();
-    int numTests = 10;
+    int numTests = 5;
     std::vector<double> durations;
-    
-    int numThreads = 1;
-    
+
+    int numThreads = 6;
+
     //generateImage(numThreads);
-    
+
     //Run tests
     for (int i = 0; i < numTests; i++)
     {
@@ -174,22 +184,22 @@ int main()
         durations.push_back(result.count());
     }
     delete color;
-    
-    
-    
+
+
+
     //Output Test Results
     double mean = computeAverage(durations);
     double sd = computeSd(durations, mean);
     std::cout << "Average time: "<< mean <<  "s\n";
     std::cout << "Standard Deviation: " << sd << "s\n";
-    
-    
+
+
     //Generate one mandelbrot image
     std::ofstream fout("mandelbrot.ppm");
     fout << "P3" << std::endl;
     fout << imageSize << " " << imageSize << std::endl;
     fout << "256" << std::endl;
-    
+
     for (int i = 0; i < imageSize; i++)
     {
         for (int j = 0; j < imageSize; j++)
@@ -198,6 +208,5 @@ int main()
         }
         fout << std::endl;
     }
-    
-}
 
+}

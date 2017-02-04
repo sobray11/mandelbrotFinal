@@ -13,23 +13,23 @@
 #include "TSQ.hpp"
 
 class ThreadPool2 {
-    
+
     using func = std::function<void(void)>;
-    
+
 public:
     ThreadPool2(int);
-    
+
     template<class F, class... Args>
     auto enqueue(F&& f, Args&&... args)
     -> std::future<typename std::result_of<F(Args...)>::type>;
-    
+
     ~ThreadPool2();
-    
+
 private:
-    
+
     std::vector< std::thread > pool;
     TSQ<func> queue;
-    
+
 
     std::mutex itemMutex;
     std::condition_variable condition;
@@ -48,7 +48,7 @@ inline ThreadPool2::ThreadPool2(int threads)
                                  for(;;)
                                  {
                                      std::function<void(void)> task;
-                                     
+
                                      {
                                          std::unique_lock<std::mutex> lock(this->itemMutex);
                                          this->condition.wait(lock,
@@ -58,7 +58,7 @@ inline ThreadPool2::ThreadPool2(int threads)
                                          //task = std::move(this->tasks.front());
                                          this->queue.dequeue(task);
                                      }
-                                     
+
                                      task();
                                  }
                              }
@@ -71,19 +71,18 @@ auto ThreadPool2::enqueue(F&& f, Args&&... args)
 -> std::future<typename std::result_of<F(Args...)>::type>
 {
     using return_type = typename std::result_of<F(Args...)>::type;
-    
+
     auto task = std::make_shared< std::packaged_task<return_type()> >(
-                                                                      std::bind(std::forward<F>(f), std::forward<Args>(args)...)
-                                                                      );
-    
+        std::bind(std::forward<F>(f), std::forward<Args>(args)...));
+
     std::future<return_type> res = task->get_future();
     {
         std::unique_lock<std::mutex> lock(itemMutex);
-        
+
         // don't allow enqueueing after stopping the pool
         if(shouldContinue)
             throw std::runtime_error("enqueue on stopped ThreadPool");
-        
+
         queue.enqueue([task](){ (*task)(); });
     }
     condition.notify_one();
@@ -103,4 +102,3 @@ inline ThreadPool2::~ThreadPool2()
 }
 
 #endif
-                                         
