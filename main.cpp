@@ -84,24 +84,34 @@ Color* computeColor(int n, Color* newColor)
 }
 
 //Generate madelbrot without writing to a file
-void generateMadlebrot(int beg, int end)
+void generateMadlebrot(int beg)
 {
+  for (int j = 0; j < imageSize; j++)
+  {
+    double cr = mapToReal(j, imageSize, minReal, maxReal);
+    double ci = mapToImaginary(beg, imageSize, minImag, maxImag);
+    int n = findMandelbrot(cr, ci, maxPixelVal);
+
+    color = computeColor(n, color);
+
+    imageContents[beg][j] = *color;
+  }
 
     //int index = beg;
-    for (int i = beg; i < end; i++)
-    {
-        for (int j = 0; j < imageSize; j++)
-        {
-            double cr = mapToReal(j, imageSize, minReal, maxReal);
-            double ci = mapToImaginary(i, imageSize, minImag, maxImag);
-            int n = findMandelbrot(cr, ci, maxPixelVal);
-
-            color = computeColor(n, color);
-
-            imageContents[i][j] = *color;
-            //std::cout << " 0 ";
-        }
-    }
+    // for (int i = beg; i < end; i++)
+    // {
+    //     for (int j = 0; j < imageSize; j++)
+    //     {
+    //         double cr = mapToReal(j, imageSize, minReal, maxReal);
+    //         double ci = mapToImaginary(i, imageSize, minImag, maxImag);
+    //         int n = findMandelbrot(cr, ci, maxPixelVal);
+    //
+    //         color = computeColor(n, color);
+    //
+    //         imageContents[i][j] = *color;
+    //         //std::cout << " 0 ";
+    //     }
+    // }
     // for (int i = beg; i < end; i++)
     // {
     //     for (int j = 0; j < imageSize; j++)
@@ -123,6 +133,12 @@ void generateImage(int numThreads)
 {
     ThreadPool2 pool(numThreads);
 
+    for (int i = 0; i < imageSize; i++)
+    {
+      pool.enqueue([=](){generateMadlebrot(i);});
+    }
+
+
     // for (int i = 0; i < imageSize; i++)
     // {
     //   for (int j = 0; j < imageSize; j++)
@@ -132,17 +148,17 @@ void generateImage(int numThreads)
     //   }
     // }
 
-    for (int i = 0; i < 8; i++)
-    {
-        int beg = (imageSize / 8) * i;
-        int end = (imageSize / 8) * (i+1);
-
-        //std::function<void(void)> task = std::bind(generateMadlebrot, beg, end);
-
-        pool.enqueue([=](){generateMadlebrot(beg, end);});
+    // for (int i = 0; i < 8; i++)
+    // {
+    //     int beg = (imageSize / 8) * i;
+    //     int end = (imageSize / 8) * (i+1);
+    //
+    //     //std::function<void(void)> task = std::bind(generateMadlebrot, beg, end);
+    //
+    //     pool.enqueue([=](){generateMadlebrot(beg, end);});
 
         //pool.enqueue(task);
-    }
+    // }
 }
 
    //Function calculate average
