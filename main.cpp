@@ -84,29 +84,42 @@ Color* computeColor(int n, Color* newColor)
 }
 
 //Generate madelbrot without writing to a file
-void generateMadlebrot(int beg, int end)
+void generateMadlebrot(int beg)
 {
 
   // for (int j = 0; j < imageSize; j++)
   // {
-    double cr = mapToReal(end, imageSize, minReal, maxReal);
+  //Pixel by Pixel
+    // double cr = mapToReal(end, imageSize, minReal, maxReal);
+    // double ci = mapToImaginary(beg, imageSize, minImag, maxImag);
+    // int n = findMandelbrot(cr, ci, maxPixelVal);
+    //
+    // color = computeColor(n, color);
+    //
+    // imageContents[beg][end] = *color;
+
+
+  //row by row
+  for (int j = 0; j < imageSize / 2; j++)
+  {
+    double cr = mapToReal(j, imageSize, minReal, maxReal);
     double ci = mapToImaginary(beg, imageSize, minImag, maxImag);
     int n = findMandelbrot(cr, ci, maxPixelVal);
 
     color = computeColor(n, color);
 
-    imageContents[beg][end] = *color;
-  //row by row
-  // for (int j = 0; j < imageSize; j++)
-  // {
-  //   double cr = mapToReal(j, imageSize, minReal, maxReal);
-  //   double ci = mapToImaginary(beg, imageSize, minImag, maxImag);
-  //   int n = findMandelbrot(cr, ci, maxPixelVal);
-  //
-  //   color = computeColor(n, color);
-  //
-  //   imageContents[beg][j] = *color;
-  // }
+    imageContents[beg][j] = *color;
+  }
+  for (int j = imageSize / 2; j < imageSize; j++)
+  {
+    double cr = mapToReal(j, imageSize, minReal, maxReal);
+    double ci = mapToImaginary(beg, imageSize, minImag, maxImag);
+    int n = findMandelbrot(cr, ci, maxPixelVal);
+
+    color = computeColor(n, color);
+
+    imageContents[beg][j] = *color;
+  }
 
     //int index = beg;
     // for (int i = beg; i < end; i++)
@@ -146,20 +159,20 @@ void generateImage(int numThreads)
     ThreadPool2 pool(numThreads);
 
     //Row by row
-    // for (int i = 0; i < imageSize; i++)
-    // {
-    //   pool.enqueue([=](){generateMadlebrot(i);});
-    // }
-
-    //Pixel by pixel
     for (int i = 0; i < imageSize; i++)
     {
-      for (int j = 0; j < imageSize; j++)
-      {
-        pool.enqueue([=](){generateMadlebrot(i, j);});
-        //std::cout << "Hello";
-      }
+      pool.enqueue([=](){generateMadlebrot(i);});
     }
+
+    // Pixel by pixel
+    // for (int i = 0; i < imageSize; i++)
+    // {
+    //   for (int j = 0; j < imageSize; j++)
+    //   {
+    //     pool.enqueue([=](){generateMadlebrot(i, j);});
+    //     //std::cout << "Hello";
+    //   }
+    // }
 
     // for (int i = 0; i < 8; i++)
     // {
@@ -202,7 +215,7 @@ int main()
     int numTests = 5;
     std::vector<double> durations;
 
-    int numThreads = 8;
+    int numThreads = 1;
 
     //generateImage(numThreads);
 
