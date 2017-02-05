@@ -55,17 +55,15 @@ inline ThreadPool2::ThreadPool2(int threads)
                                                               [this]{ return this->shouldContinue || !this->queue.empty(); });
                                          if(this->shouldContinue && this->queue.empty())
                                              return;
-                                         //task = std::move(this->tasks.front());
                                          this->queue.dequeue(task);
                                      }
-
                                      task();
                                  }
                              }
                              );
 }
 
-// add new work item to the pool
+//Template for function with arguments
 template<class F, class... Args>
 auto ThreadPool2::enqueue(F&& f, Args&&... args)
 -> std::future<typename std::result_of<F(Args...)>::type>
@@ -79,7 +77,6 @@ auto ThreadPool2::enqueue(F&& f, Args&&... args)
     {
         std::unique_lock<std::mutex> lock(itemMutex);
 
-        // don't allow enqueueing after stopping the pool
         if(shouldContinue)
             throw std::runtime_error("enqueue on stopped ThreadPool");
 
@@ -88,8 +85,7 @@ auto ThreadPool2::enqueue(F&& f, Args&&... args)
     condition.notify_one();
     return res;
 }
-
-// the destructor joins all threads
+//Join the threads
 inline ThreadPool2::~ThreadPool2()
 {
     {

@@ -21,15 +21,15 @@ auto minReal = -1.5;
 auto maxReal = 0.7;
 auto minImag = -1.0;
 auto maxImag = 1.0;
-//std::vector<int> imageContents (imageSize * imageSize * 4);
 
-
+//Color struct to hold color values
 struct Color {
     int red = 0;
     int green = 0;
     int blue = 0;
 };
 
+//2Dimensional Vector of color structs
 std::vector<std::vector<Color>> imageContents(imageSize, std::vector<Color>(imageSize));
 
 //Global struct object to be used for each pixel
@@ -73,7 +73,6 @@ int findMandelbrot(double cr, double ci, int maxIterations)
     }
     return i;
 }
-
 //Determine rgb color value for each pixel
 Color* computeColor(int n, Color* newColor)
 {
@@ -98,19 +97,8 @@ void generateMadlebrot(int beg)
     //
     // imageContents[beg][end] = *color;
 
-
   //row by row
-  for (int j = 0; j < imageSize / 2; j++)
-  {
-    double cr = mapToReal(j, imageSize, minReal, maxReal);
-    double ci = mapToImaginary(beg, imageSize, minImag, maxImag);
-    int n = findMandelbrot(cr, ci, maxPixelVal);
-
-    color = computeColor(n, color);
-
-    imageContents[beg][j] = *color;
-  }
-  for (int j = imageSize / 2; j < imageSize; j++)
+  for (int j = 0; j < imageSize; j++)
   {
     double cr = mapToReal(j, imageSize, minReal, maxReal);
     double ci = mapToImaginary(beg, imageSize, minImag, maxImag);
@@ -121,21 +109,17 @@ void generateMadlebrot(int beg)
     imageContents[beg][j] = *color;
   }
 
-    //int index = beg;
-    // for (int i = beg; i < end; i++)
-    // {
-    //     for (int j = 0; j < imageSize; j++)
-    //     {
-    //         double cr = mapToReal(j, imageSize, minReal, maxReal);
-    //         double ci = mapToImaginary(i, imageSize, minImag, maxImag);
-    //         int n = findMandelbrot(cr, ci, maxPixelVal);
-    //
-    //         color = computeColor(n, color);
-    //
-    //         imageContents[i][j] = *color;
-    //         //std::cout << " 0 ";
-    //     }
-    // }
+  //Half Rows
+  // for (int j = imageSize / 2; j < imageSize; j++)
+  // {
+  //   double cr = mapToReal(j, imageSize, minReal, maxReal);
+  //   double ci = mapToImaginary(beg, imageSize, minImag, maxImag);
+  //   int n = findMandelbrot(cr, ci, maxPixelVal);
+  //
+  //   color = computeColor(n, color);
+  //
+  //   imageContents[beg][j] = *color;
+  // }
     //Even chunks
     // for (int i = beg; i < end; i++)
     // {
@@ -152,11 +136,16 @@ void generateMadlebrot(int beg)
     // }
 }
 
-
-
 void generateImage(int numThreads)
 {
     ThreadPool2 pool(numThreads);
+    // Even Chunks
+    // for (int i = 0; i < 8; i++)
+    // {
+    //     int beg = (imageSize / 8) * i;
+    //     int end = (imageSize / 8) * (i+1);
+    //     pool.enqueue([=](){generateMadlebrot(beg, end);});
+    // }
 
     //Row by row
     for (int i = 0; i < imageSize; i++)
@@ -174,20 +163,9 @@ void generateImage(int numThreads)
     //   }
     // }
 
-    // for (int i = 0; i < 8; i++)
-    // {
-    //     int beg = (imageSize / 8) * i;
-    //     int end = (imageSize / 8) * (i+1);
-    //
-    //     //std::function<void(void)> task = std::bind(generateMadlebrot, beg, end);
-    //
-    //     pool.enqueue([=](){generateMadlebrot(beg, end);});
-
-        //pool.enqueue(task);
-    // }
 }
 
-   //Function calculate average
+   //Function to calculate average
     double computeAverage(std::vector<double> &duration)
     {
       double mean = 0.0;
@@ -212,12 +190,9 @@ void generateImage(int numThreads)
 int main()
 {
     color = new Color();
-    int numTests = 5;
     std::vector<double> durations;
-
-    int numThreads = 1;
-
-    //generateImage(numThreads);
+    int numTests = 5;
+    int numThreads = 4;
 
     //Run tests
     for (int i = 0; i < numTests; i++)
@@ -227,14 +202,11 @@ int main()
     }
     delete color;
 
-
-
     //Output Test Results
     double mean = computeAverage(durations);
     double sd = computeSd(durations, mean);
     std::cout << "Average time: "<< mean <<  "s\n";
     std::cout << "Standard Deviation: " << sd << "s\n";
-
 
     //Generate one mandelbrot image
     std::ofstream fout("mandelbrot.ppm");
@@ -250,5 +222,4 @@ int main()
         }
         fout << std::endl;
     }
-
 }

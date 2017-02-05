@@ -17,12 +17,11 @@ template<typename T>
 class TSQ
 {
 
-    
 public:
     void enqueue(T t)
     {
         std::lock_guard<std::mutex> l(m);
-        
+
         q.push(t);
     }
     bool dequeue(T& res)
@@ -41,7 +40,7 @@ public:
         }
         return false;
     }
-    
+
 private:
     std::queue<T> q;
     std::mutex m;
